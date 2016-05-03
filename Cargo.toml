@@ -1,0 +1,6 @@
+[package]
+name = "limpet"
+version = "0.1.0"
+authors = ["Steve Hoffman <steveh@goofy.net>"]
+
+[dependencies]
