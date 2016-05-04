@@ -4,3 +4,6 @@ version = "0.1.0"
 authors = ["Steve Hoffman <steveh@goofy.net>"]
 
 [dependencies]
+getopts = "0.2"
+liquid = "0.7"
+walkdir = "0.1"
