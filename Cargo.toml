@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Steve Hoffman <steveh@goofy.net>"]
 
 [dependencies]
-getopts = "0.2"
+rustc-serialize = "0.3"
+docopt = "0.6"
 liquid = "0.7"
 walkdir = "0.1"
