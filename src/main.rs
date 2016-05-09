@@ -38,19 +38,8 @@ struct Args {
     flag_version: bool
 }
 
-// fn print_usage(program: &str, opts: Options) {
-//     let brief = format!(r#"Usage:
-//   {} SRC_FILE DEST_FILE
-// "#;
-//     let brief = format!("Usage: {} SRC_FILE DEST_FILE [options]", program);
-//     print!("{}", opts.usage(&brief));
-// }
-
 fn main() {
     let args:Args = Docopt::new(USAGE).and_then(|d| d.decode()).unwrap_or_else(|e| e.exit());
-
-    // Dump arguments - DEBUG
-    // println!("{:?}", args);
 
     // Build a data context for the liquid templates
     let mut data = Context::new();
@@ -60,7 +49,7 @@ fn main() {
     }
 
     if args.flag_version {
-        println!("liquid v{}", VERSION);
+        println!("limpet v{}", VERSION);
         exit(0);
     }
 
