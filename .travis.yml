@@ -8,6 +8,7 @@ branches:
 os:
 - osx
 - linux
+script: make release
 matrix:
   fast_finish: true
 deploy:
