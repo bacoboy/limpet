@@ -12,10 +12,10 @@ script: cargo build --release --verbose
 matrix:
   fast_finish: true
 deploy:
-  provider: releases
-  api_key:
-    secure: qjgxdPZhCRIC/PuaKQRultLQrGd/yvvoxtzv83eP8Z1/fKIUtl2UM4nI7riuFFnnzvHiifJWD1yUo1FVolVWupF62PzHbex2U81wcMQxasVizW7l/xPDKwkcggNuUvcyF+OaqUBzu7lkA+gp0Ri910AXsWVx28kk9HhUADMvN2dBAHdVONItXqA+6FA1Itgya0vL/jo6l2fAcLKMylU0sz/YggmkHf8Kt7GLC3eGeMScvMyqKSZ5zCVxdA7l74Zvjb/uEblSzc5ByiCC5zstCSz3RcxEoV5DpZcIpLgaUiGiE3ZlJO0SLFw8FdN4fkuOHg5d+JYPUBLB18lJXUURB5Wn7233gFMB96KXuoBdgs8lX40hsb8YF4cOwzUs/kQ+bJB0heRKVUF2zDXJyWFMfFD+LUVw0EnKXwTP2EFfl3KlgqApBH7zRnMpRsE1HbQISnQpeKUf4rTQNuQ5mknlDUGlfkEWHMAqS7bG/UZ0vGFk9j5+CHWsd5dZqxlCsX57pOAuUlA+2SDX/KQic9NriqfIgThpilE+z4/3rVlvDX+sMKWDCtCz8zgUxauhbIrusKrXdQE0A4X9Mn87ikbvdwU9QPi8lZPS2W3NxHhHlM75DgAXUflLFzSvJYnu8sdmZ/z6BZ9CKzcIZxUY1N4COKDqOzyFhTCKw1wQeQN6fOQ=
-  file: /home/travis/build/bacoboy/limpet/target/release/limpet
-  on:
-    repo: bacoboy/limpet
+  provider: bintray
+  file: .bintray.json
+  user: bacoboy
+  key:
+    secure: qsmI/6aPFO4UYnvp1Nz/jiB6xk4KnxFyT3DEO4RUl3uOSeiqMttGVuVmbRm/faO2KRFKQdLhUuIX8nwi8YOb//gwdRbgmtzUg7GDcN5nbqTLhu8ie0NKLkXETgEc88dR6Gea2dOQuwZuH0ZslB/f/FTJRae1FermD2h/9vsVAaBycRRUGU+WLJD0zQblnuEBGS6Bg1hsLkbxpM/AkeMv8MTBVs1gLJSRzL6Awoyp9vNNGNy+l1POtikICnnkWwFCgafNRmjgAFHkJFX/bsJD66igYvPToB4a7M0m8vchb2PBv1Z/Lbx/PcpmnSzmn3igQLuNSR5sknTYcvCoZMhISm6Rb/6WeMWsW07+hdcw4tsbQINPSsI/00Mf+nhRtQtYTH3HEOLbdl4U3N/AMb5dbtVsWFiPdwQrlg6/1CjHxzDeDRyd/n19GK50pOY10S81lIaer5SrZ9GQh2QJXwnCGi5xQqnaV0iLtXA6MXpRm5kMXAttmebescVWuVobobYENDW8oIg5xS+VY2mwYWa+/hUFUZ6Ou3VNU57q2A0+ydvvM4hpstsgPTruxwzb8Ah83qWzARAkXk4sItRJNuv6RXM9Md2Q6Y6Plk9/Pu3prqBjnyTq00tnZ9ccM+pS5ON7mDcemA/2EyXV39UqAg6bNbePtIQt3o6AOqyKSCJLyck=
+  dry-run: true
 
