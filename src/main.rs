@@ -1,26 +1,19 @@
-extern crate rustc_serialize;
 extern crate docopt;
-use docopt::Docopt;
+extern crate rustc_serialize;
+extern crate liquid;
+extern crate walkdir;
 
 use std::env;
-use std::fs;
 use std::fs::File;
-use std::io::Error;
 use std::io::Read;
 use std::io::Write;
-use std::path::Path;
 use std::path::PathBuf;
 use std::process::exit;
-
-extern crate liquid;
+use docopt::Docopt;
 use liquid::Context;
 use liquid::Renderable;
 use liquid::Template;
 use liquid::Value;
-
-// use liquid::{Renderable, LiquidOptions, Context, Value};
-
-extern crate walkdir;
 use walkdir::WalkDir;
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -44,15 +37,56 @@ struct Args {
     flag_extension: String,
     flag_recursive: bool,
     arg_dir: String,
-    flag_help: bool,
+    // flag_help: bool,  Don't need this - it's automatically processed by docopt
     flag_version: bool
 }
 
-fn read_whole_file(mut f: &File) -> String {
-    let mut contents: Vec<u8> = Vec::new();
-    let size = f.read_to_end(&mut contents).expect("Couldn't read whole file");
-    println!("Read {} bytes", size);
-    return String::from_utf8(contents).unwrap();
+fn process_single_file(source: &PathBuf, destination: &PathBuf, context: &mut Context) -> Result<(), String> {
+    // Read in full template as string
+    match File::open(source.as_path()) {
+        Ok(mut f) => {
+            // Double check that the source isn't a directory
+            if let Ok(metadata) = source.metadata() {
+                if metadata.is_dir() {
+                    return Err(format!("Source file {:?} can't be a directory.  Did you mean to use the --recursive option?", &source));
+                }
+
+                // TODO: save permissions to set file with later?
+                // let permissions = metadata.permissions();
+
+            } else {
+                return Err(format!("Problem reading source file metadata <{:?}>: Could be permissions.", &source));
+            }
+
+            // Read template and process
+            let mut contents: Vec<u8> = Vec::new();
+            let _ = f.read_to_end(&mut contents).expect("Couldn't read whole file");
+            // println!("Read {} bytes", size);
+            let template_string = String::from_utf8(contents).unwrap();
+            let template: Template = liquid::parse(&template_string, Default::default()).unwrap();
+            if let Ok(Some(output_string)) = template.render(context) {
+                // println!("rendered file is {:?}", &output_string);
+                match File::create(&destination) {
+                    Ok(mut output_file) => {
+                        if let Err(e) = output_file.write_all(&output_string.into_bytes()) {
+                            return Err(format!("Error writing file {}: {}", destination.to_str().unwrap(), &e));
+                        }
+                        // I don't think we need to flush/close in rust.
+                        // output_file.flush();
+                        return Ok(());
+                    }
+                    Err(e) => {
+                        return Err(format!("Destination file <{}>: {}", destination.to_str().unwrap(), &e));
+                    }
+                }
+            } else {
+                return Err(format!("Unknown error while rendering the template for {}", source.to_str().unwrap()));
+            }
+        }
+        Err(e) => {
+            return Err(format!("{:?}", e));
+        }
+    }
 }
 
 fn main() {
@@ -72,76 +106,51 @@ fn main() {
 
     if args.flag_recursive {
         // Do recursive scan starting at <dir>
+        println!("Scanning directory {}...", &args.arg_dir);
         for entry in WalkDir::new(&args.arg_dir) {
             match entry {
                 Ok(ref e) => {
-                    // println!("scanning {} ", e.path().display());
+                    // println!("Scanning directory {} ", e.path().display());
                     if e.file_type().is_file() {
                         let p = e.path();
                         // println!("{} is a file", p.display());
                         if let Some(ext) = p.extension() {
                             if ext.to_str() == Some(&args.flag_extension) {
                                 if let Some(parent) = p.parent() {
-                                    let mut path = PathBuf::from(parent);
+                                    let mut dest = PathBuf::from(parent);
                                     if let Some(file_stem) = p.file_stem() {
-                                        path.push(file_stem);
-                                        let dest = path.as_path();
-                                        println!("Processing file {} into {}", p.display(), dest.display());
+                                        dest.push(file_stem);
+                                        // println!("Processing file {} into {}", p.display(), dest.display());
+                                        match process_single_file(&p.to_path_buf(), &dest, &mut data) {
+                                            Ok(_) => {
+                                                println!("Processed: {} => {}", p.to_path_buf().display(), dest.display());
+                                            }
+                                            Err(e) => {
+                                                println!("ERROR processing file {}: {:?}", p.display(), e);
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                Err(_) => {
+                Err(ref e) => {
+                    println!("ERROR processing directory entry {:?}: {:?}", entry, e);
                 }
             }
-            // let entry = entry.unwrap();
-            // println!("{}", entry.path().display());
         }
     } else {
         // Do single file
-        match File::open(&args.arg_source) {
-            Ok(source) => {
-                if let Ok(metadata) = source.metadata() {
-                    if metadata.is_dir() {
-                        println!("Source file {} can't be a directory.  Did you mean to use the --recursive option?", &args.arg_source);
-                        exit(1);
-                    }
-
-                    // TODO: save permissions to set file with later?
-                    // let permissions = metadata.permissions();
-
-                } else {
-                    println!("Problem reading source file metadata <{}>: Could be permissions.", &args.arg_source);
-                    exit(1);
-                }
-
-                // Read in full template as string
-                let template_string = read_whole_file(&source);
-                let template: Template = liquid::parse(&template_string, Default::default()).unwrap();
-                if let Ok(Some(output_string)) = template.render(&mut data) {
-                    // println!("rendered file is {:?}", &output_string);
-                    match File::create(&args.arg_dest) {
-                        Ok(mut destination) => {
-                            if let Err(e) = destination.write_all(&output_string.into_bytes()) {
-                                println!("Error writing file {}", &args.arg_dest);
-                                exit(1);
-                            }
-                            destination.flush();
-                        }
-                        Err(e) => {
-                            println!("Destination file <{}>: {}", &args.arg_dest, &e);
-                            exit(1);
-                        }
-                    }
-                } else {
-                    println!("Error rendering the template");
-                    exit(1);
-                }
+        let source = PathBuf::from(&args.arg_source);
+        let dest = PathBuf::from(&args.arg_dest);
+        match process_single_file(&source.to_path_buf(), &dest, &mut data) {
+            Ok(_) => {
+                println!("Processed: {} => {}", source.display(), dest.display());
+                exit(0);
             }
             Err(e) => {
-                println!("Source file <{}>: {}", &args.arg_source, &e);
+                println!("ERROR processing file {}: {:?}", source.display(), e);
                 exit(1);
             }
         }
