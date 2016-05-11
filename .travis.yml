@@ -1,16 +1,19 @@
 sudo: false
 language: rust
 rust:
-  - stable
-
+- stable
 branches:
   only:
   - master
-
 os:
-    - osx
-    - linux
-
+- osx
+- linux
 matrix:
   fast_finish: true
-
+deploy:
+  provider: releases
+  api_key:
+    secure: qjgxdPZhCRIC/PuaKQRultLQrGd/yvvoxtzv83eP8Z1/fKIUtl2UM4nI7riuFFnnzvHiifJWD1yUo1FVolVWupF62PzHbex2U81wcMQxasVizW7l/xPDKwkcggNuUvcyF+OaqUBzu7lkA+gp0Ri910AXsWVx28kk9HhUADMvN2dBAHdVONItXqA+6FA1Itgya0vL/jo6l2fAcLKMylU0sz/YggmkHf8Kt7GLC3eGeMScvMyqKSZ5zCVxdA7l74Zvjb/uEblSzc5ByiCC5zstCSz3RcxEoV5DpZcIpLgaUiGiE3ZlJO0SLFw8FdN4fkuOHg5d+JYPUBLB18lJXUURB5Wn7233gFMB96KXuoBdgs8lX40hsb8YF4cOwzUs/kQ+bJB0heRKVUF2zDXJyWFMfFD+LUVw0EnKXwTP2EFfl3KlgqApBH7zRnMpRsE1HbQISnQpeKUf4rTQNuQ5mknlDUGlfkEWHMAqS7bG/UZ0vGFk9j5+CHWsd5dZqxlCsX57pOAuUlA+2SDX/KQic9NriqfIgThpilE+z4/3rVlvDX+sMKWDCtCz8zgUxauhbIrusKrXdQE0A4X9Mn87ikbvdwU9QPi8lZPS2W3NxHhHlM75DgAXUflLFzSvJYnu8sdmZ/z6BZ9CKzcIZxUY1N4COKDqOzyFhTCKw1wQeQN6fOQ=
+  file: target/release/limpet
+  on:
+    repo: bacoboy/limpet
