@@ -42,7 +42,7 @@
 
     "files":
         [
-        {"includePattern": "target/release/limpet"}
+        {"includePattern": "target/release/limpet", "uploadPattern":"limpet"}
         ],
     "publish": true
 }
