@@ -8,7 +8,7 @@ branches:
 os:
 - osx
 - linux
-script: make all
+script: cargo build --release --verbose
 matrix:
   fast_finish: true
 deploy:
