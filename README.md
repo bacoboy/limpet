@@ -4,3 +4,12 @@
 A [liquid template](http://liquidmarkup.org/) command line tool.
 
 ## Usage
+
+## Compile
+To compile for ubuntu/amazon linux:
+```
+docker run -v `pwd`:/source -ti schickling/rust cargo build --release
+```
+The binary will be `target/release/limpet`
+
+TODO: publish via Travis-CI
