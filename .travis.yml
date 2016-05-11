@@ -3,7 +3,14 @@ language: rust
 rust:
   - stable
 
+branches:
+  only:
+  - master
+
 os:
     - osx
     - linux
+
+matrix:
+  fast_finish: true
 
