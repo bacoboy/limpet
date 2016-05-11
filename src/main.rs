@@ -8,6 +8,8 @@ use std::fs::File;
 use std::io::Error;
 use std::io::Read;
 use std::io::Write;
+use std::path::Path;
+use std::path::PathBuf;
 use std::process::exit;
 
 extern crate liquid;
@@ -18,8 +20,8 @@ use liquid::Value;
 
 // use liquid::{Renderable, LiquidOptions, Context, Value};
 
-// extern crate walkdir;
-// use walkdir::WalkDir;
+extern crate walkdir;
+use walkdir::WalkDir;
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -41,7 +43,7 @@ struct Args {
     arg_dest: String,
     flag_extension: String,
     flag_recursive: bool,
-    arg_dir: Option<String>,
+    arg_dir: String,
     flag_help: bool,
     flag_version: bool
 }
@@ -70,6 +72,33 @@ fn main() {
 
     if args.flag_recursive {
         // Do recursive scan starting at <dir>
+        for entry in WalkDir::new(&args.arg_dir) {
+            match entry {
+                Ok(ref e) => {
+                    // println!("scanning {} ", e.path().display());
+                    if e.file_type().is_file() {
+                        let p = e.path();
+                        // println!("{} is a file", p.display());
+                        if let Some(ext) = p.extension() {
+                            if ext.to_str() == Some(&args.flag_extension) {
+                                if let Some(parent) = p.parent() {
+                                    let mut path = PathBuf::from(parent);
+                                    if let Some(file_stem) = p.file_stem() {
+                                        path.push(file_stem);
+                                        let dest = path.as_path();
+                                        println!("Processing file {} into {}", p.display(), dest.display());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Err(_) => {
+                }
+            }
+            // let entry = entry.unwrap();
+            // println!("{}", entry.path().display());
+        }
     } else {
         // Do single file
         match File::open(&args.arg_source) {
@@ -77,7 +106,7 @@ fn main() {
                 if let Ok(metadata) = source.metadata() {
                     if metadata.is_dir() {
                         println!("Source file {} can't be a directory.  Did you mean to use the --recursive option?", &args.arg_source);
-                        exit(3);
+                        exit(1);
                     }
 
                     // TODO: save permissions to set file with later?
@@ -85,25 +114,25 @@ fn main() {
 
                 } else {
                     println!("Problem reading source file metadata <{}>: Could be permissions.", &args.arg_source);
-                    exit(2);
+                    exit(1);
                 }
 
+                // Read in full template as string
                 let template_string = read_whole_file(&source);
                 let template: Template = liquid::parse(&template_string, Default::default()).unwrap();
                 if let Ok(Some(output_string)) = template.render(&mut data) {
-                    println!("should write to file next");
-                    println!("output is {:?}", &output_string);
+                    // println!("rendered file is {:?}", &output_string);
                     match File::create(&args.arg_dest) {
                         Ok(mut destination) => {
                             if let Err(e) = destination.write_all(&output_string.into_bytes()) {
                                 println!("Error writing file {}", &args.arg_dest);
-                                exit(2);
+                                exit(1);
                             }
                             destination.flush();
                         }
                         Err(e) => {
                             println!("Destination file <{}>: {}", &args.arg_dest, &e);
-                            exit(2);
+                            exit(1);
                         }
                     }
                 } else {
@@ -116,9 +145,5 @@ fn main() {
                 exit(1);
             }
         }
-
-
     }
-
-    println!("Hello, world!");
 }
