@@ -3,6 +3,14 @@
 
 A [liquid template](http://liquidmarkup.org/) command line tool.
 
+Keep an eye on [this github issue](https://github.com/cobalt-org/liquid-rust/issues/11) for details
+on which filters are implements or not.  The list isn't as complete as I thought when I started this.
+
+## Download
+There is a linux 64 bit pre-compiled binary available at bintray
+
+[ ![Download](https://api.bintray.com/packages/bacoboy/limpet/limpet/images/download.svg) ](https://bintray.com/bacoboy/limpet/limpet/_latestVersion)
+
 ## Usage
 
 ## Compile
