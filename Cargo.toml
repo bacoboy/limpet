@@ -1,10 +1,10 @@
 [package]
 name = "limpet"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Steve Hoffman <steveh@goofy.net>"]
 
 [dependencies]
 rustc-serialize = "0.3.19"
 docopt = "0.6.80"
-liquid = "0.7.0"
+liquid = "0.8.2"
 walkdir = "0.1.5"
