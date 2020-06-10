@@ -10,10 +10,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::process::exit;
 use docopt::Docopt;
-use liquid::Context;
-use liquid::Renderable;
 use liquid::Template;
-use liquid::Value;
 use walkdir::WalkDir;
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -41,7 +38,7 @@ struct Args {
     flag_version: bool
 }
 
-fn process_single_file(source: &PathBuf, destination: &PathBuf, context: &mut Context) -> Result<(), String> {
+fn process_single_file(source: &PathBuf, destination: &PathBuf, context: &mut liquid::Object) -> Result<(), String> {
     // Read in full template as string
     match File::open(source.as_path()) {
         Ok(mut f) => {
@@ -63,8 +60,8 @@ fn process_single_file(source: &PathBuf, destination: &PathBuf, context: &mut Co
             let _ = f.read_to_end(&mut contents).expect("Couldn't read whole file");
             // println!("Read {} bytes", size);
             let template_string = String::from_utf8(contents).unwrap();
-            let template: Template = liquid::parse(&template_string, Default::default()).unwrap();
-            if let Ok(Some(output_string)) = template.render(context) {
+            let template: Template = liquid::ParserBuilder::with_stdlib().build().unwrap().parse(&template_string).unwrap();
+            if let Ok(output_string) = template.render(context) {
                 // println!("rendered file is {:?}", &output_string);
                 match File::create(&destination) {
                     Ok(mut output_file) => {
@@ -93,10 +90,12 @@ fn main() {
     let args:Args = Docopt::new(USAGE).and_then(|d| d.decode()).unwrap_or_else(|e| e.exit());
 
     // Build a data context for the liquid templates
-    let mut data = Context::new();
+    // let mut data = Context::new();
+    let mut data = liquid::Object::new();
     for (key, value) in env::vars() {
         // println!("key: {} value: {}", &key, &value);
-        data.set_val(&key, Value::Str(value));
+        // data.set_val(&key, Value::Str(value));
+        data.insert(key.into(), liquid::model::Value::scalar(value));
     }
 
     if args.flag_version {

@@ -6,5 +6,5 @@ authors = ["Steve Hoffman <steveh@goofy.net>"]
 [dependencies]
 rustc-serialize = "0.3.19"
 docopt = "0.6.83"
-liquid = "0.8.4"
+liquid = "0.20.0"
 walkdir = "0.1.8"
