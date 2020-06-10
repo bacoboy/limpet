@@ -90,11 +90,9 @@ fn main() {
     let args:Args = Docopt::new(USAGE).and_then(|d| d.decode()).unwrap_or_else(|e| e.exit());
 
     // Build a data context for the liquid templates
-    // let mut data = Context::new();
     let mut data = liquid::Object::new();
     for (key, value) in env::vars() {
         // println!("key: {} value: {}", &key, &value);
-        // data.set_val(&key, Value::Str(value));
         data.insert(key.into(), liquid::model::Value::scalar(value));
     }
 
