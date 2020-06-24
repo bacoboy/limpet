@@ -63,39 +63,47 @@ fn process_single_file(
                 .expect("Couldn't read whole file");
             // println!("Read {} bytes", size);
             let template_string = String::from_utf8(contents).unwrap();
-            let template: Template = liquid::ParserBuilder::with_stdlib()
+            let template_result = liquid::ParserBuilder::with_stdlib()
                 .build()
                 .unwrap()
-                .parse(&template_string)
-                .unwrap();
-            if let Ok(output_string) = template.render(context) {
-                // println!("rendered file is {:?}", &output_string);
-                match File::create(&destination) {
-                    Ok(mut output_file) => {
-                        if let Err(e) = output_file.write_all(&output_string.into_bytes()) {
+                .parse(&template_string);
+
+            let template: Template = match template_result {
+                Ok(t) => t,
+                Err(e) => return Err(e.to_string()),
+            };
+
+            match template.render(context) {
+                Ok(output_string) => {
+                    match File::create(&destination) {
+                        Ok(mut output_file) => {
+                            if let Err(e) = output_file.write_all(&output_string.into_bytes()) {
+                                return Err(format!(
+                                    "Error writing file {}: {}",
+                                    destination.to_str().unwrap(),
+                                    &e
+                                ));
+                            }
+                            // I don't think we need to flush/close in rust.
+                            // output_file.flush();
+                            return Ok(());
+                        }
+                        Err(e) => {
                             return Err(format!(
-                                "Error writing file {}: {}",
+                                "Destination file <{}>: {}",
                                 destination.to_str().unwrap(),
                                 &e
                             ));
                         }
-                        // I don't think we need to flush/close in rust.
-                        // output_file.flush();
-                        return Ok(());
-                    }
-                    Err(e) => {
-                        return Err(format!(
-                            "Destination file <{}>: {}",
-                            destination.to_str().unwrap(),
-                            &e
-                        ));
                     }
                 }
-            } else {
-                return Err(format!(
-                    "Unknown error while rendering the template for {}",
-                    source.to_str().unwrap()
-                ));
+                Err(e) => {
+                    return Err(format!(
+                        "Unknown error while rendering the template for {}: {}",
+                        source.to_str().unwrap(),
+                        e.to_string(),
+                    ));
+                }
             }
         }
         Err(e) => {
@@ -179,7 +187,7 @@ fn main() {
                 exit(0);
             }
             Err(e) => {
-                println!("ERROR processing file {}: {:?}", source.display(), e);
+                println!("ERROR processing file {}: {:}", source.display(), e);
                 exit(1);
             }
         }
