@@ -1,6 +1,6 @@
 [package]
 name = "limpet"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Steve Hoffman <steveh@goofy.net>"]
 edition = '2018'
 
